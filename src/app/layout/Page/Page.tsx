@@ -1,20 +1,18 @@
-import React, {FC, ReactNode} from "react";
+import React, { FC } from "react";
+
 import { PageContainer } from "./Page.style";
+import PageProps from "./Page.props";
 import Appbar from "../Appbar";
 
-type PageProps = {
-  appbar?: ReactNode;
-  children: ReactNode;
-};
-const Page: FC<PageProps> = ({ appbar, children, ...rest  }: PageProps) => {
-  return (
-    <React.Fragment>
-      <Appbar>{appbar}</Appbar>
-      <PageContainer role="main" {...rest}>
-        {children}
-      </PageContainer>
-    </React.Fragment>
-  );
-};
+const Page: FC<PageProps> = ({ children }: PageProps) => {
+    return (
+        <>
+            <Appbar />
+            <PageContainer role="main">
+                {children}
+            </PageContainer>
+        </>
+    );
+}
 
 export default Page;
