@@ -1,10 +1,11 @@
 import React, { PureComponent, FormEvent, ChangeEvent } from "react";
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+import Grid from "@material-ui/core/Grid";
+import FormControl from "@material-ui/core/FormControl";
+import Button from "@material-ui/core/Button";
 
-import AddressField from '../AddressField';
-import AddressFormProps from './AddressForm.props';
-import AddressFormState from './AddressForm.state';
+import AddressField from "../AddressField";
+import AddressFormProps from "./AddressForm.props";
+import AddressFormState from "./AddressForm.state";
 
 class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
     constructor(props: AddressFormProps) {
@@ -68,14 +69,15 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                     direction="column"
                     justify="center"
                     alignItems="center"
-                    spacing={1}
+                    spacing={2}
                 >
+
                     {
                         this.state.addresses.map(
                             (address, index) => {
                                 const addressKey = `address-${index}`;
                                 return (
-                                    <Grid item xs={12} key={addressKey}>
+                                    <Grid item key={addressKey}>
                                         <AddressField
                                             label="Address"
                                             value={address}
@@ -88,29 +90,44 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                         )
                     }
 
-                    <Grid item xs={9}>
-                        <AddressField
-                            label="New address"
-                            value={this.state.currentAddress}
-                            onChange={this.setAddress.bind(this)}
-                        />
-                    </Grid>
+                    <Grid
+                        container
+                        item
+                        direction="row"
+                        xs={12}
+                        spacing={1}
+                        justify="center"
+                        alignItems="center"
+                    >
+                        <Grid item>
+                            <AddressField
+                                label="New address"
+                                value={this.state.currentAddress}
+                                onChange={this.setAddress.bind(this)}
+                            />
+                        </Grid>
 
-                    <Grid item xs={3}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            type="button"
-                            onClick={this.addAddress.bind(this)}
-                        >+</Button>
+                        <Grid item>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="button"
+                                fullWidth
+                                onClick={this.addAddress.bind(this)}
+                                disabled={this.state.currentAddress.length === 0}
+                            >+</Button>
+                        </Grid>
                     </Grid>
 
                     <Grid item xs={12}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            type="submit"
-                        >Calculate itinerary</Button>
+                        <FormControl>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                disabled={this.state.addresses.length === 0}
+                            >Calculate itinerary</Button>
+                        </FormControl>
                     </Grid>
                 </Grid>
             </form>

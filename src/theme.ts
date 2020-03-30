@@ -28,8 +28,12 @@ const theme: ThemeOptions = {
     spacing: 12,
     palette: {
         primary: {
-            main: COLORS.darkGray
+            main: COLORS.pink
         },
+
+        secondary: {
+            main: COLORS.green
+        }
     },
     typography: {
         fontFamily: [
