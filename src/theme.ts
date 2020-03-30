@@ -32,15 +32,21 @@ const theme: ThemeOptions = {
         },
     },
     typography: {
+        fontFamily: [
+            'Open Sans',
+            'Ariomo',
+            'Arial',
+            'sans-serif',
+        ].join(','),
+
         h1: {
-            fontFamily: "Open Sans, Ariomo, Arial, sans-serif",
             fontStyle: "normal",
             fontWeight: "bold",
             fontSize: "24px",
             lineHeight: "33px",
         },
+
         body1: {
-            fontFamily: "Open Sans, Ariomo, Arial, sans-serif",
             fontSize: "18px",
             fontWeight: "normal",
             lineHeight: "21px",
