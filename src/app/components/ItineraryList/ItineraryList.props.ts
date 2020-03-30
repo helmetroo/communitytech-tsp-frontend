@@ -1,4 +1,5 @@
 type ItineraryListProps = {
+    order: number[];
     addresses: string[];
 };
 

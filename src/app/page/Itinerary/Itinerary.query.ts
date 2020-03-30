@@ -1,7 +1,8 @@
 import { ParsedUrlQuery } from "querystring";
 
 type ItineraryPageQueryParams = ParsedUrlQuery & {
-    addresses?: string
+    order?: string;
+    addresses?: string;
 }
 
 export default ItineraryPageQueryParams;

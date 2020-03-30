@@ -10,6 +10,7 @@ import ItineraryPageQueryParams from "./Itinerary.query";
 
 class ItineraryPage extends PureComponent<RouteComponentProps> {
     protected readonly itinerary: string[] = [];
+    protected readonly order: number[] = [];
 
     constructor(props: RouteComponentProps) {
         super(props);
@@ -19,7 +20,13 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
         if(parsedQuery.addresses) {
             const itinerary = parsedQuery.addresses;
             this.itinerary = itinerary.split('|');
-            console.log(this.itinerary);
+        }
+
+        if(parsedQuery.order) {
+            const orderString = parsedQuery.order;
+            this.order = orderString.split(',').map(
+                numberStr => parseInt(numberStr, 10)
+            );
         }
     }
 
@@ -28,7 +35,7 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
             <Page>
                 <Typography>
                     <h1>Here's your itinerary</h1>
-                    <ItineraryList addresses={this.itinerary} />
+                    <ItineraryList addresses={this.itinerary} order={this.order} />
                 </Typography>
             </Page>
         );

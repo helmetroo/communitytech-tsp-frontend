@@ -1,8 +1,12 @@
+import { parse as urlParse, format as urlFormat } from "url";
+import { stringify as queryStringify } from "querystring";
+
 import React, { PureComponent, FormEvent, ChangeEvent } from "react";
 import Grid from "@material-ui/core/Grid";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 
+import ShortestRouteResponse from "../../types/ShortestRouteResponse";
 import AddressField from "../AddressField";
 import AddressFormProps from "./AddressForm.props";
 import AddressFormState from "./AddressForm.state";
@@ -57,8 +61,67 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         });
     }
 
-    protected submitAddresses(event: FormEvent<HTMLFormElement>) {
+    protected async submitAddresses(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+
+        const rootServerUrlString =
+            process.env.REACT_APP_COMMUNITYTECH_TSP_SERVER_URL;
+        if(!rootServerUrlString) {
+            this.showError('Unable to connect to server.');
+            return;
+        }
+
+        const addressesSearchString =
+            AddressForm.createSearchString(this.state.addresses);
+
+        const serverUrl = urlParse(rootServerUrlString);
+        serverUrl.pathname = '/shortest-route';
+        serverUrl.search = addressesSearchString;
+
+        try {
+            const serverUrlString = urlFormat(serverUrl);
+            const serverResponse = await fetch(serverUrlString);
+            const {
+                order: shortestRouteOrder
+            } = await serverResponse.json() as ShortestRouteResponse;
+
+            const itineraryUrl = this.buildItineraryUrlString(shortestRouteOrder);
+            this.props.history.push(itineraryUrl);
+        } catch(err) {
+            this.showError('Unable to connect to server.');
+        }
+    }
+
+    protected static createSearchString(addresses: string[], order?: number[]) {
+        const addressesString = addresses.join('|');
+        const queryObject = {
+            addresses: addressesString,
+            order: ''
+        };
+
+        if(order)
+            queryObject.order = order.join(',');
+
+        const addressesStringQuery = queryStringify(queryObject);
+
+        return addressesStringQuery;
+    }
+
+    protected buildItineraryUrlString(addressOrder: number[]) {
+        const addressesStringQuery =
+            AddressForm.createSearchString(this.state.addresses, addressOrder);
+
+        const itineraryUrl = {
+            pathname: '/itinerary',
+            search: addressesStringQuery
+        };
+
+        return urlFormat(itineraryUrl);
+    }
+
+    protected showError(message: string) {
+        if(this.props.onError)
+            this.props.onError(message);
     }
 
     render() {
@@ -125,7 +188,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                                 variant="contained"
                                 color="primary"
                                 type="submit"
-                                disabled={this.state.addresses.length === 0}
+                                disabled={this.state.addresses.length < 2}
                             >Calculate itinerary</Button>
                         </FormControl>
                     </Grid>
