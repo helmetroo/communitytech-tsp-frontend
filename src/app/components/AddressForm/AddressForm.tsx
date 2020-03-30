@@ -45,13 +45,24 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         })
     }
 
-    protected handleSubmit(event: FormEvent<HTMLFormElement>) {
+    protected deleteAddress(addressIndex: number) {
+        const newAddresses = this.state.addresses.filter(
+            (_, index) => (index !== addressIndex)
+        );
+
+        this.setState({
+            ...this.state,
+            addresses: newAddresses
+        });
+    }
+
+    protected submitAddresses(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
     }
 
     render() {
         return (
-            <form onSubmit={(event) => this.handleSubmit.call(this, event)}>
+            <form onSubmit={(event) => this.submitAddresses.call(this, event)}>
                 <Grid
                     container
                     direction="column"
@@ -69,6 +80,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                                             label="Address"
                                             value={address}
                                             onChange={(event) => this.changeAddress.call(this, event, index)}
+                                            onDelete={() => this.deleteAddress.call(this, index)}
                                         />
                                     </Grid>
                                 );
