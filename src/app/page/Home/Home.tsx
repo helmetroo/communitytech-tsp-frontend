@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 import Typography from '@material-ui/core/Typography';
 
 import AddressForm from '../../components/AddressForm';
 import { Page } from "../../layout";
 
-class HomePage extends Component {
+class HomePage extends PureComponent {
     render() {
         return (
             <Page>

@@ -7,6 +7,7 @@ import "./App.css";
 import theme from "./theme";
 
 import HomePage from "./app/page/Home";
+import ItineraryPage from "./app/page/Itinerary";
 
 class App extends Component {
     render() {
@@ -19,9 +20,15 @@ class App extends Component {
                     <Router>
                         <div className="App">
                             <Switch>
-                                <Route exact path="/">
-                                    <HomePage />
-                                </Route>
+                                <Route
+                                    exact
+                                    path="/"
+                                    render={(props) => <HomePage {...props} />}
+                                />
+                                <Route
+                                    path="/itinerary"
+                                    render={(props) => <ItineraryPage {...props} />}
+                                />
                             </Switch>
                         </div>
                     </Router>
