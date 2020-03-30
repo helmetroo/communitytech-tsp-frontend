@@ -4,6 +4,7 @@ import PropType from "../../types/PropType";
 
 type ErrorCallback = (errorMessage: string) => void;
 type AddressFormProps = {
+    addresses: string[];
     history: PropType<RouteComponentProps, "history">;
     onError: ErrorCallback;
 };

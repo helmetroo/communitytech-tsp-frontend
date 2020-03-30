@@ -51,6 +51,10 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
         return addressesInShortestRouteOrder.join('/');
     }
 
+    protected goBackToHome() {
+        this.props.history.goBack();
+    }
+
     render() {
         const mapsUrl = this.buildMapsUrl();
 
@@ -72,14 +76,21 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
                     </Grid>
 
                     <Grid item container direction="row" justify="center" alignItems="center">
-                    <Grid item xs={6}>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            type="submit"
-                            href={mapsUrl}
-                        >View route in Google Maps</Button>
-                    </Grid>
+                        <Grid item xs={6}>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                href={mapsUrl}
+                            >View route in Google Maps</Button>
+                        </Grid>
+
+                        <Grid item xs={6}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={this.goBackToHome.bind(this)}
+                            >&lt;&lt; EDIT STOPS</Button>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Page>

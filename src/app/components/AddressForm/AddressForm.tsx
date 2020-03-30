@@ -17,8 +17,22 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
 
         this.state = {
             currentAddress: '',
-            addresses: []
-        }
+            addresses: this.props.addresses
+        };
+    }
+
+    protected updateQueryParameters() {
+        const addressQuery = '?' + AddressForm.createSearchString(this.state.addresses);
+        const newUrl =
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            window.location.pathname +
+            addressQuery;
+
+        window.history.pushState({
+            path: newUrl
+        }, '', newUrl);
     }
 
     protected setAddress(event: ChangeEvent<HTMLInputElement>) {
@@ -47,7 +61,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         this.setState({
             ...this.state,
             addresses: newAddresses
-        })
+        });
     }
 
     protected deleteAddress(addressIndex: number) {
@@ -63,6 +77,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
 
     protected async submitAddresses(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        this.updateQueryParameters();
 
         const rootServerUrlString =
             process.env.REACT_APP_COMMUNITYTECH_TSP_SERVER_URL;

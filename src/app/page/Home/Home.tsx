@@ -1,3 +1,5 @@
+import { parse as parseQueryString } from "querystring";
+
 import React, { PureComponent, SyntheticEvent } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -7,17 +9,32 @@ import Typography from "@material-ui/core/Typography";
 import AddressForm from "../../components/AddressForm";
 import { Page } from "../../layout";
 
+import HomePageQueryParams from "./Home.query";
 import HomePageState from "./Home.state";
 
 class HomePage extends PureComponent<RouteComponentProps, HomePageState> {
+    protected readonly initialAddresses: string[] = [];
+
     constructor(props: RouteComponentProps) {
         super(props);
+        this.initialAddresses = this.getInitialAddresses();
         this.state = {
             errorSnackbar: {
                 open: false,
                 message: null
             }
         }
+    }
+
+    protected getInitialAddresses() {
+        const queryString = this.props.location.search.substr(1);
+        const parsedQuery: HomePageQueryParams = parseQueryString(queryString);
+        if(parsedQuery.addresses) {
+            const addresses = parsedQuery.addresses;
+            return addresses.split('|');
+        }
+
+        return [];
     }
 
     protected openSnackbar(message: string) {
@@ -62,7 +79,10 @@ class HomePage extends PureComponent<RouteComponentProps, HomePageState> {
                     <h1>Input your stops below</h1>
                     <p>We'll find you the quickest route</p>
                 </Typography>
-                <AddressForm history={this.props.history} onError={this.openSnackbar.bind(this)} />
+                <AddressForm
+                    addresses={this.initialAddresses}
+                    history={this.props.history}
+                    onError={this.openSnackbar.bind(this)} />
             </Page>
         );
     }
