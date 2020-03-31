@@ -60,8 +60,8 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
 
         return (
             <Page>
-                <Typography>
-                    <h1>Here's your itinerary</h1>
+                <Typography variant="h1">
+                    Here's your itinerary
                 </Typography>
 
                 <Grid

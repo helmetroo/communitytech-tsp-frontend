@@ -46,7 +46,7 @@ const theme: ThemeOptions = {
         h1: {
             fontStyle: "normal",
             fontWeight: "bold",
-            fontSize: "24px",
+            fontSize: "1.5rem",
             lineHeight: "33px",
         },
 

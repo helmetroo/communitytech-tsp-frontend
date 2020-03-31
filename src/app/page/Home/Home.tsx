@@ -5,6 +5,7 @@ import { RouteComponentProps } from "react-router-dom";
 import MuiAlert from "@material-ui/lab/Alert";
 import Snackbar from "@material-ui/core/Snackbar";
 import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
 
 import AddressForm from "../../components/AddressForm";
 import { Page } from "../../layout";
@@ -75,10 +76,14 @@ class HomePage extends PureComponent<RouteComponentProps, HomePageState> {
                         {this.state.errorSnackbar.message}
                     </MuiAlert>
                 </Snackbar>
-                <Typography>
-                    <h1>Input your stops below</h1>
-                    <p>We'll find you the quickest route</p>
-                </Typography>
+                <Box m="2rem">
+                    <Typography variant="h1">
+                        Input your stops below
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                        We'll find you the quickest route
+                    </Typography>
+                </Box>
                 <AddressForm
                     addresses={this.initialAddresses}
                     history={this.props.history}
