@@ -3,13 +3,21 @@ import { stringify as queryStringify } from "querystring";
 
 import React, { PureComponent, FormEvent, ChangeEvent } from "react";
 import Grid from "@material-ui/core/Grid";
+import Card from "@material-ui/core/Card";
+import Box from "@material-ui/core/Box";
+import Typography from "@material-ui/core/Typography";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
+
+import { COLORS } from "../../../theme";
 
 import ShortestRouteResponse from "../../types/ShortestRouteResponse";
 import AddressField from "../AddressField";
 import AddressFormProps from "./AddressForm.props";
 import AddressFormState from "./AddressForm.state";
+import { AddressFieldMode } from "../AddressField/AddressField.props";
 
 class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
     constructor(props: AddressFormProps) {
@@ -139,75 +147,128 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             this.props.onError(message);
     }
 
+    protected createAddressField(
+        id: string,
+        label: string,
+        address: string,
+        index: number
+    ) {
+        return (
+            <AddressField
+            id={id}
+            label={label}
+            mode={AddressFieldMode.Normal}
+            value={address}
+            onChange={(event) => this.changeAddress.call(this, event, index)}
+            onDelete={() => this.deleteAddress.call(this, index)}
+            />
+        );
+    }
+
+    protected createComponentForStartAddress() {
+        if(this.state.addresses.length === 0)
+            return null;
+
+        const [startLocation] = this.state.addresses;
+        const addressFieldKey = `address-field-start`;
+        const addressField =
+            this.createAddressField(addressFieldKey, "Starting address", startLocation, 0);
+
+        const addressFieldWrapper = (
+            <Grid item>
+                <Card style={{ backgroundColor: COLORS.lightGreen }}>
+                    <Typography variant="caption">Your start address</Typography>
+                    <Box p={0.8}>{addressField}</Box>
+                </Card>
+            </Grid>
+        );
+
+        return addressFieldWrapper;
+    }
+
+    protected createComponentForStopAddresses() {
+        if(this.state.addresses.length < 2)
+            return null;
+
+        const [, ...stopLocations] = this.state.addresses;
+        const stopLocationsListItems = stopLocations.map((address, index) => {
+            const addressFieldKey = `address-field-stop-${index}`;
+            const addressField =
+                this.createAddressField(addressFieldKey, "Stop address", address, index + 1);
+
+            return (
+                <ListItem>{addressField}</ListItem>
+            );
+        });
+
+        const stopLocationsList = (
+            <Grid item>
+                <Card>
+                    <Typography variant="caption">Your stops</Typography>
+                    <List>{stopLocationsListItems}</List>
+                </Card>
+            </Grid>
+        );
+
+        return stopLocationsList;
+    }
+
     render() {
         return (
             <form onSubmit={(event) => this.submitAddresses.call(this, event)}>
-                <Grid
-                    container
-                    direction="column"
-                    justify="center"
-                    alignItems="center"
-                    spacing={2}
-                >
-
-                    {
-                        this.state.addresses.map(
-                            (address, index) => {
-                                const addressKey = `address-${index}`;
-                                return (
-                                    <Grid item key={addressKey}>
-                                        <AddressField
-                                            label="Address"
-                                            value={address}
-                                            onChange={(event) => this.changeAddress.call(this, event, index)}
-                                            onDelete={() => this.deleteAddress.call(this, index)}
-                                        />
-                                    </Grid>
-                                );
-                            }
-                        )
-                    }
-
-                    <Grid
-                        container
-                        item
-                        direction="row"
-                        xs={12}
-                        spacing={1}
-                        justify="center"
-                        alignItems="center"
-                    >
-                        <Grid item>
-                            <AddressField
-                                label="New address"
-                                value={this.state.currentAddress}
-                                onChange={this.setAddress.bind(this)}
-                            />
-                        </Grid>
-
-                        <Grid item>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                type="button"
-                                fullWidth
-                                onClick={this.addAddress.bind(this)}
-                                disabled={this.state.currentAddress.length === 0}
-                            >+</Button>
-                        </Grid>
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        <FormControl>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                type="submit"
-                                disabled={this.state.addresses.length < 2}
-                            >Calculate itinerary</Button>
-                        </FormControl>
-                    </Grid>
+            <Grid
+            container
+            direction="column"
+            justify="center"
+            alignItems="center"
+            spacing={1}
+            >
+            {this.createComponentForStartAddress()}
+            {this.createComponentForStopAddresses()}
+            <Grid
+                container
+                item
+                direction="row"
+                xs={12}
+                spacing={1}
+                style={{ marginTop: "1em" }}
+                justify="center"
+                alignItems="center"
+            >
+                <Grid item>
+                    <AddressField
+                        id="next-address-field"
+                        label={this.state.addresses.length === 0 ? "Starting address" : "Next stop address"}
+                        mode={AddressFieldMode.Outline}
+                        value={this.state.currentAddress}
+                        onChange={this.setAddress.bind(this)}
+                    />
                 </Grid>
+
+                <Grid item>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="button"
+                        fullWidth
+                        size="large"
+                        onClick={this.addAddress.bind(this)}
+                        disabled={this.state.currentAddress.length === 0}
+                    >+</Button>
+                </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+                <FormControl>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                        disabled={this.state.addresses.length < 2}
+                    >Calculate itinerary</Button>
+                </FormControl>
+            </Grid>
+            </Grid>
             </form>
         );
     }

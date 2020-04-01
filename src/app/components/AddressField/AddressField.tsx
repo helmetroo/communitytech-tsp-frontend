@@ -3,10 +3,11 @@ import FormControl from "@material-ui/core/FormControl";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import InputLabel from "@material-ui/core/InputLabel";
+import Input from "@material-ui/core/Input";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 
-import AddressFieldProps from './AddressField.props';
+import AddressFieldProps, { AddressFieldMode } from './AddressField.props';
 
 class AddressField extends PureComponent<AddressFieldProps> {
     protected onChangeValue(event: ChangeEvent<HTMLInputElement>) {
@@ -19,8 +20,38 @@ class AddressField extends PureComponent<AddressFieldProps> {
             this.props.onDelete();
     }
 
+    protected createNormalInput(deleteButton: JSX.Element | null) {
+        return (
+            <Input
+            id={this.props.id}
+            type="text"
+            value={this.props.value}
+            onChange={this.onChangeValue.bind(this)}
+            endAdornment={deleteButton}
+            />
+        );
+    }
+
+    protected createOutlinedInput(deleteButton: JSX.Element | null) {
+        return (
+            <>
+            <InputLabel htmlFor={this.props.id}>
+            {this.props.label}
+            </InputLabel>
+            <OutlinedInput
+            id={this.props.id}
+            type="text"
+            value={this.props.value}
+            onChange={this.onChangeValue.bind(this)}
+            labelWidth={140}
+            endAdornment={deleteButton}
+            />
+            </>
+        );
+    }
+
     render() {
-        let deleteButton = null;
+        let deleteButton: JSX.Element | null = null;
         if(this.props.onDelete) {
             deleteButton = (
                 <InputAdornment position="end">
@@ -35,17 +66,14 @@ class AddressField extends PureComponent<AddressFieldProps> {
             );
         }
 
+        const inputToRender =
+            (this.props.mode === AddressFieldMode.Normal)
+            ? this.createNormalInput(deleteButton)
+            : this.createOutlinedInput(deleteButton);
+
         return (
             <FormControl variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-password">{this.props.label}</InputLabel>
-            <OutlinedInput
-            id="outlined-adornment-password"
-            type="text"
-            value={this.props.value}
-            onChange={this.onChangeValue.bind(this)}
-            labelWidth={104}
-            endAdornment={(this.props.onDelete) ? deleteButton : null}
-            />
+                {inputToRender}
             </FormControl>
         );
     }

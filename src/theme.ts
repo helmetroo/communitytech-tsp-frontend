@@ -1,14 +1,15 @@
 import _ from "lodash";
 import { ThemeOptions } from "@material-ui/core";
 
-const COLORS = {
-    green: '#00CA9D',
-    darkBlue: '#150E60',
-    purple: '#5D5799',
-    white: '#F8F8FF',
-    pink: '#E74990',
-    darkGray: '#333',
-    lightGray: '#A7A6AE',
+export const COLORS = {
+    lightGreen: "#DEF4EF",
+    green: "#00CA9D",
+    darkBlue: "#150E60",
+    purple: "#5D5799",
+    white: "#F8F8FF",
+    pink: "#E74990",
+    darkGray: "#333",
+    lightGray: "#A7A6AE",
 };
 
 // utils to extract style
@@ -33,15 +34,15 @@ const theme: ThemeOptions = {
 
         secondary: {
             main: COLORS.green
-        }
+        },
     },
     typography: {
         fontFamily: [
-            'Open Sans',
-            'Ariomo',
-            'Arial',
-            'sans-serif',
-        ].join(','),
+            "Open Sans",
+            "Ariomo",
+            "Arial",
+            "sans-serif",
+        ].join(","),
 
         h1: {
             fontStyle: "normal",
