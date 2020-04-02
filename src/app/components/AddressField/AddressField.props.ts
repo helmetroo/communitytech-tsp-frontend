@@ -13,6 +13,7 @@ type AddressFieldProps = {
     label: string;
     mode: AddressFieldMode;
     value?: string;
+    error?: string;
     onChange?: ChangeCallback;
     onDelete?: DeleteCallback;
 }

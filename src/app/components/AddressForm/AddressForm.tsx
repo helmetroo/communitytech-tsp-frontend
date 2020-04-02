@@ -14,18 +14,26 @@ import Button from "@material-ui/core/Button";
 import { COLORS } from "../../../theme";
 
 import ShortestRouteResponse from "../../types/ShortestRouteResponse";
+import ShortestRouteErrorResponse from "../../types/ShortestRouteErrorResponse";
+import AddressesUnresolvedError from "../../types/AddressesUnresolvedError";
+import ServerError from "../../types/ServerError";
 import AddressField from "../AddressField";
 import AddressFormProps from "./AddressForm.props";
 import AddressFormState from "./AddressForm.state";
 import { AddressFieldMode } from "../AddressField/AddressField.props";
+import AddressFieldConfig from "../AddressField/AddressField.config";
 
 class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
+    protected static readonly DEFAULT_ERROR_MESSAGE: string =
+        "Sorry, we were unable to fetch the shortest route for you.";
+
     constructor(props: AddressFormProps) {
         super(props);
 
         this.state = {
             currentAddress: '',
-            addresses: this.props.addresses
+            addresses: this.props.addresses,
+            erroredAddressIndices: []
         };
     }
 
@@ -57,6 +65,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             this.state.addresses.concat(this.state.currentAddress);
 
         this.setState({
+            ...this.state,
             currentAddress: "",
             addresses: newAddresses
         });
@@ -83,14 +92,22 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         });
     }
 
+    protected clearAllAddressErrors() {
+        this.setState({
+            ...this.state,
+            erroredAddressIndices: []
+        });
+    }
+
     protected async submitAddresses(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        this.clearAllAddressErrors();
         this.updateQueryParameters();
 
         const rootServerUrlString =
             process.env.REACT_APP_COMMUNITYTECH_TSP_SERVER_URL;
         if(!rootServerUrlString) {
-            this.showError('Unable to connect to server.');
+            this.showError(AddressForm.DEFAULT_ERROR_MESSAGE);
             return;
         }
 
@@ -104,15 +121,61 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         try {
             const serverUrlString = urlFormat(serverUrl);
             const serverResponse = await fetch(serverUrlString);
-            const {
-                order: shortestRouteOrder
-            } = await serverResponse.json() as ShortestRouteResponse;
-
-            const itineraryUrl = this.buildItineraryUrlString(shortestRouteOrder);
-            this.props.history.push(itineraryUrl);
+            await this.handleServerResponse(serverResponse);
         } catch(err) {
-            this.showError('Unable to connect to server.');
+            let errorMessage = AddressForm.DEFAULT_ERROR_MESSAGE;
+            if(err instanceof AddressesUnresolvedError) {
+                errorMessage = err.message;
+                this.setErroredAddressIndices(err.erroredAddressIndices);
+            }
+
+            this.showError(errorMessage);
         }
+    }
+
+    protected async handleServerResponse(serverResponse: Response) {
+        if(serverResponse.status === 200) {
+            await this.handleSuccessResponse(serverResponse);
+            return;
+        }
+
+        if(serverResponse.status === 400) {
+            await this.handleBadRequestResponse(serverResponse);
+            return;
+        }
+
+        this.handleServerErrorResponse(serverResponse);
+    }
+
+    protected async handleSuccessResponse(serverResponse: Response) {
+        const {
+            order: shortestRouteOrder
+        } = await serverResponse.json() as ShortestRouteResponse;
+
+        const itineraryUrl = this.buildItineraryUrlString(shortestRouteOrder);
+        this.props.history.push(itineraryUrl);
+    }
+
+    protected async handleBadRequestResponse(serverResponse: Response) {
+        const {
+            message,
+            erroredAddressIndices
+        } = await serverResponse.json() as ShortestRouteErrorResponse;
+
+        const addressesUnresolvedError = new AddressesUnresolvedError(message, erroredAddressIndices);
+        throw addressesUnresolvedError;
+    }
+
+    protected handleServerErrorResponse(serverResponse: Response) {
+        const serverError = new ServerError(AddressForm.DEFAULT_ERROR_MESSAGE);
+        throw serverError;
+    }
+
+    protected setErroredAddressIndices(erroredAddressIndices: number[]) {
+        this.setState({
+            ...this.state,
+            erroredAddressIndices
+        });
     }
 
     protected static createSearchString(addresses: string[], order?: number[]) {
@@ -126,7 +189,6 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             queryObject.order = order.join(',');
 
         const addressesStringQuery = queryStringify(queryObject);
-
         return addressesStringQuery;
     }
 
@@ -147,20 +209,24 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             this.props.onError(message);
     }
 
-    protected createAddressField(
-        id: string,
-        label: string,
-        address: string,
-        index: number
-    ) {
+    protected createAddressField(addressFormConfig: AddressFieldConfig) {
+        const {
+            id,
+            label,
+            address,
+            index,
+            error
+        } = addressFormConfig;
+
         return (
             <AddressField
-            id={id}
-            label={label}
-            mode={AddressFieldMode.Normal}
-            value={address}
-            onChange={(event) => this.changeAddress.call(this, event, index)}
-            onDelete={() => this.deleteAddress.call(this, index)}
+                id={id}
+                label={label}
+                mode={AddressFieldMode.Normal}
+                value={address}
+                error={error}
+                onChange={(event) => this.changeAddress.call(this, event, index)}
+                onDelete={() => this.deleteAddress.call(this, index)}
             />
         );
     }
@@ -171,8 +237,19 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
 
         const [startLocation] = this.state.addresses;
         const addressFieldKey = `address-field-start`;
+        const addressFieldConfig: AddressFieldConfig = {
+            id: addressFieldKey,
+            label: "Starting address",
+            address: startLocation,
+            index: 0,
+        };
+
+        const erroredAddress = this.state.erroredAddressIndices.includes(0);
+        if(erroredAddress)
+            addressFieldConfig.error = `Cannot find address.`;
+
         const addressField =
-            this.createAddressField(addressFieldKey, "Starting address", startLocation, 0);
+            this.createAddressField(addressFieldConfig);
 
         const addressFieldWrapper = (
             <Grid item>
@@ -193,8 +270,20 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         const [, ...stopLocations] = this.state.addresses;
         const stopLocationsListItems = stopLocations.map((address, index) => {
             const addressFieldKey = `address-field-stop-${index}`;
+
+            const addressFieldConfig: AddressFieldConfig = {
+                id: addressFieldKey,
+                label: "Stop address",
+                address,
+                index: index + 1,
+            };
+
+            const erroredAddress = this.state.erroredAddressIndices.includes(index);
+            if(erroredAddress)
+                addressFieldConfig.error = `Cannot find address.`;
+
             const addressField =
-                this.createAddressField(addressFieldKey, "Stop address", address, index + 1);
+                this.createAddressField(addressFieldConfig);
 
             return (
                 <ListItem>{addressField}</ListItem>

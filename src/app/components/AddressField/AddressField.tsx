@@ -1,9 +1,10 @@
+import { isEmpty } from "lodash";
 import React, { PureComponent, ChangeEvent } from "react";
 import FormControl from "@material-ui/core/FormControl";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import InputLabel from "@material-ui/core/InputLabel";
-import Input from "@material-ui/core/Input";
+import TextField from "@material-ui/core/TextField";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 
@@ -22,12 +23,16 @@ class AddressField extends PureComponent<AddressFieldProps> {
 
     protected createNormalInput(deleteButton: JSX.Element | null) {
         return (
-            <Input
+            <TextField
             id={this.props.id}
             type="text"
             value={this.props.value}
             onChange={this.onChangeValue.bind(this)}
-            endAdornment={deleteButton}
+            error={!isEmpty(this.props.error)}
+            helperText={this.props.error}
+            InputProps={{
+                endAdornment: deleteButton
+            }}
             />
         );
     }
@@ -35,17 +40,17 @@ class AddressField extends PureComponent<AddressFieldProps> {
     protected createOutlinedInput(deleteButton: JSX.Element | null) {
         return (
             <>
-            <InputLabel htmlFor={this.props.id}>
-            {this.props.label}
-            </InputLabel>
-            <OutlinedInput
-            id={this.props.id}
-            type="text"
-            value={this.props.value}
-            onChange={this.onChangeValue.bind(this)}
-            labelWidth={140}
-            endAdornment={deleteButton}
-            />
+                <InputLabel htmlFor={this.props.id}>
+                    {this.props.label}
+                </InputLabel>
+                <OutlinedInput
+                    id={this.props.id}
+                    type="text"
+                    value={this.props.value}
+                    onChange={this.onChangeValue.bind(this)}
+                    labelWidth={140}
+                    endAdornment={deleteButton}
+                />
             </>
         );
     }
