@@ -4,8 +4,8 @@ import FormControl from "@material-ui/core/FormControl";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import InputLabel from "@material-ui/core/InputLabel";
-import TextField, { TextFieldProps } from "@material-ui/core/TextField";
-import OutlinedInput, { OutlinedInputProps } from "@material-ui/core/OutlinedInput";
+import TextField from "@material-ui/core/TextField";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 
 import AddressFieldProps, { AddressFieldMode } from './AddressField.props';

@@ -80,9 +80,9 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             this.state.addresses.concat(this.state.currentAddress);
 
         this.setState({
-            ...this.state,
             currentAddress: "",
-            addresses: newAddresses
+            addresses: newAddresses,
+            erroredAddressIndices: []
         });
 
         this.focusNextAddressField();
@@ -105,7 +105,8 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
 
         this.setState({
             ...this.state,
-            addresses: newAddresses
+            addresses: newAddresses,
+            erroredAddressIndices: []
         });
     }
 
