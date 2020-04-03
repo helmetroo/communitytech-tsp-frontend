@@ -6,10 +6,12 @@ export const COLORS = {
     green: "#00CA9D",
     darkBlue: "#150E60",
     purple: "#5D5799",
+    pureWhite: "#FFF",
     white: "#F8F8FF",
     pink: "#E74990",
     darkGray: "#333",
-    lightGray: "#A7A6AE",
+    lightGray: "#F7F7F7",
+    lighterGray: "#F4F4F4",
 };
 
 // utils to extract style

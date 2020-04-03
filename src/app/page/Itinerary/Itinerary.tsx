@@ -4,6 +4,7 @@ import React, { PureComponent } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
 
+import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import { Page } from "../../layout";
@@ -60,9 +61,9 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
 
         return (
             <Page>
-                <Typography variant="h1">
-                    Here's your itinerary
-                </Typography>
+                <Box m="2rem">
+                    <Typography variant="h1">Here's your itinerary</Typography>
+                </Box>
 
                 <Grid
                     container
@@ -71,23 +72,23 @@ class ItineraryPage extends PureComponent<RouteComponentProps> {
                     alignItems="center"
                     spacing={2}
                 >
-                    <Grid item xs={12}>
+                    <Grid item style={{ maxWidth: "305px", width: "100%" }}>
                         <ItineraryList addresses={this.addresses} order={this.order} />
                     </Grid>
 
-                    <Grid item container direction="row" justify="center" alignItems="center">
-                        <Grid item xs={6}>
+                    <Grid item container direction="row" justify="center" alignItems="center" spacing={2}>
+                        <Grid item>
                             <Button
                                 variant="contained"
-                                color="secondary"
+                                color="primary"
                                 href={mapsUrl}
                             >View route in Google Maps</Button>
                         </Grid>
 
-                        <Grid item xs={6}>
+                        <Grid item>
                             <Button
                                 variant="contained"
-                                color="primary"
+                                color="secondary"
                                 onClick={this.goBackToHome.bind(this)}
                             >&lt;&lt; EDIT STOPS</Button>
                         </Grid>
