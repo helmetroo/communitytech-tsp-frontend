@@ -1,7 +1,7 @@
 import { parse as urlParse, format as urlFormat } from "url";
 import { stringify as queryStringify } from "querystring";
 
-import React, { PureComponent, FormEvent, ChangeEvent } from "react";
+import React, { PureComponent, FormEvent, ChangeEvent, RefObject, createRef } from "react";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import Box from "@material-ui/core/Box";
@@ -10,6 +10,8 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
 
 import { COLORS } from "../../../theme";
 
@@ -27,18 +29,29 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
     protected static readonly DEFAULT_ERROR_MESSAGE: string =
         "Sorry, we were unable to fetch the shortest route for you.";
 
+    protected readonly nextAddressField: RefObject<AddressField> = createRef();
+
     constructor(props: AddressFormProps) {
         super(props);
 
         this.state = {
-            currentAddress: '',
+            currentAddress: "",
             addresses: this.props.addresses,
             erroredAddressIndices: []
         };
     }
 
+    componentDidMount() {
+        this.focusNextAddressField();
+    }
+
+    protected focusNextAddressField() {
+        if(this.nextAddressField.current)
+            this.nextAddressField.current.focus();
+    }
+
     protected updateQueryParameters() {
-        const addressQuery = '?' + AddressForm.createSearchString(this.state.addresses);
+        const addressQuery = "?" + AddressForm.createSearchString(this.state.addresses);
         const newUrl =
             window.location.protocol +
             "//" +
@@ -48,7 +61,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
 
         window.history.pushState({
             path: newUrl
-        }, '', newUrl);
+        }, "", newUrl);
     }
 
     protected setAddress(event: ChangeEvent<HTMLInputElement>) {
@@ -60,7 +73,9 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         });
     }
 
-    protected addAddress() {
+    protected addAddress(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
         const newAddresses =
             this.state.addresses.concat(this.state.currentAddress);
 
@@ -69,6 +84,8 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             currentAddress: "",
             addresses: newAddresses
         });
+
+        this.focusNextAddressField();
     }
 
     protected changeAddress(event: ChangeEvent<HTMLInputElement>, addressIndex: number) {
@@ -92,6 +109,16 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         });
     }
 
+    protected clearAddresses() {
+        this.setState({
+            ...this.state,
+            addresses: [],
+            erroredAddressIndices: []
+        });
+
+        this.focusNextAddressField();
+    }
+
     protected clearAllAddressErrors() {
         this.setState({
             ...this.state,
@@ -99,8 +126,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         });
     }
 
-    protected async submitAddresses(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    protected async submitAddresses() {
         this.clearAllAddressErrors();
         this.updateQueryParameters();
 
@@ -115,7 +141,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             AddressForm.createSearchString(this.state.addresses);
 
         const serverUrl = urlParse(rootServerUrlString);
-        serverUrl.pathname = '/shortest-route';
+        serverUrl.pathname = "/shortest-route";
         serverUrl.search = addressesSearchString;
 
         try {
@@ -179,14 +205,14 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
     }
 
     protected static createSearchString(addresses: string[], order?: number[]) {
-        const addressesString = addresses.join('|');
+        const addressesString = addresses.join("|");
         const queryObject = {
             addresses: addressesString,
-            order: ''
+            order: ""
         };
 
         if(order)
-            queryObject.order = order.join(',');
+            queryObject.order = order.join(",");
 
         const addressesStringQuery = queryStringify(queryObject);
         return addressesStringQuery;
@@ -197,7 +223,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             AddressForm.createSearchString(this.state.addresses, addressOrder);
 
         const itineraryUrl = {
-            pathname: '/itinerary',
+            pathname: "/itinerary",
             search: addressesStringQuery
         };
 
@@ -215,8 +241,13 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             label,
             address,
             index,
-            error
+            error,
+            deleteable
         } = addressFormConfig;
+
+        let deleteCallback = undefined;
+        if(deleteable)
+            deleteCallback = () => this.deleteAddress.call(this, index);
 
         return (
             <AddressField
@@ -226,7 +257,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                 value={address}
                 error={error}
                 onChange={(event) => this.changeAddress.call(this, event, index)}
-                onDelete={() => this.deleteAddress.call(this, index)}
+                onDelete={deleteCallback}
             />
         );
     }
@@ -242,6 +273,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
             label: "Starting address",
             address: startLocation,
             index: 0,
+            deleteable: false,
         };
 
         const erroredAddress = this.state.erroredAddressIndices.includes(0);
@@ -276,6 +308,7 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                 label: "Stop address",
                 address,
                 index: index + 1,
+                deleteable: true,
             };
 
             const erroredAddress = this.state.erroredAddressIndices.includes(index);
@@ -286,14 +319,14 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
                 this.createAddressField(addressFieldConfig);
 
             return (
-                <ListItem>{addressField}</ListItem>
+                <ListItem key={addressFieldKey}>{addressField}</ListItem>
             );
         });
 
         const stopLocationsList = (
             <Grid item>
                 <Card>
-                    <Typography variant="caption">Your stops</Typography>
+                    <Typography variant="caption">Your destinations</Typography>
                     <List>{stopLocationsListItems}</List>
                 </Card>
             </Grid>
@@ -302,63 +335,85 @@ class AddressForm extends PureComponent<AddressFormProps, AddressFormState> {
         return stopLocationsList;
     }
 
+    protected getAddressFieldPrompt() {
+        if(this.state.addresses.length === 0)
+            return "Enter your starting address";
+
+        return "Enter a destination";
+    }
+
     render() {
+        const startAddress = this.createComponentForStartAddress();
+        const stopAddresses = this.createComponentForStopAddresses();
+        const nextAddressFieldLabel =
+            this.getAddressFieldPrompt();
+
         return (
-            <form onSubmit={(event) => this.submitAddresses.call(this, event)}>
-            <Grid
-            container
-            direction="column"
-            justify="center"
-            alignItems="center"
-            spacing={1}
-            >
-            {this.createComponentForStartAddress()}
-            {this.createComponentForStopAddresses()}
             <Grid
                 container
-                item
-                direction="row"
-                xs={12}
-                spacing={1}
-                style={{ marginTop: "1em" }}
+                direction="column"
                 justify="center"
                 alignItems="center"
+                spacing={1}
             >
-                <Grid item>
-                    <AddressField
-                        id="next-address-field"
-                        label={this.state.addresses.length === 0 ? "Starting address" : "Next stop address"}
-                        mode={AddressFieldMode.Outline}
-                        value={this.state.currentAddress}
-                        onChange={this.setAddress.bind(this)}
-                    />
-                </Grid>
+                {startAddress}
+                {stopAddresses}
 
-                <Grid item>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        type="button"
-                        fullWidth
-                        size="large"
-                        onClick={this.addAddress.bind(this)}
-                        disabled={this.state.currentAddress.length === 0}
-                    >+</Button>
+                <form onSubmit={(event) => this.addAddress.call(this, event)}>
+                    <Box display="flex" alignItems="center" justifyContent="center" mt="1rem">
+                        <Box m="0.5rem">
+                            <AddressField
+                                id="next-address-field"
+                                ref={this.nextAddressField}
+                                label={nextAddressFieldLabel}
+                                mode={AddressFieldMode.Outline}
+                                value={this.state.currentAddress}
+                                onChange={this.setAddress.bind(this)}
+                            />
+                        </Box>
+                        <Box m="0.5rem">
+                            <Fab
+                                color="primary"
+                                type="submit"
+                                size="large"
+                                disabled={this.state.currentAddress.length === 0}
+                                aria-label="Add address">
+                                <AddIcon />
+                            </Fab>
+                        </Box>
+                    </Box>
+                </form>
+                <Grid
+                    container
+                    item
+                    direction="row"
+                    xs
+                    spacing={3}
+                    justify="center"
+                    alignItems="center"
+                >
+                    <Grid item>
+                        <FormControl>
+                            <Button
+                                variant="contained"
+                                type="button"
+                                onClick={this.clearAddresses.bind(this)}
+                                disabled={this.state.addresses.length === 0}
+                            >Clear</Button>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={this.submitAddresses.bind(this)}
+                                disabled={this.state.addresses.length < 2}
+                            >Calculate itinerary</Button>
+                        </FormControl>
+                    </Grid>
                 </Grid>
             </Grid>
-
-            <Grid item xs={12}>
-                <FormControl>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        type="submit"
-                        disabled={this.state.addresses.length < 2}
-                    >Calculate itinerary</Button>
-                </FormControl>
-            </Grid>
-            </Grid>
-            </form>
         );
     }
 }

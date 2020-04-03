@@ -56,6 +56,10 @@ const theme: ThemeOptions = {
             fontWeight: "normal",
             lineHeight: "21px",
         },
+
+        caption: {
+            fontSize: "1rem"
+        }
     },
 };
 

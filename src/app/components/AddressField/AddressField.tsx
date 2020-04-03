@@ -1,16 +1,23 @@
 import { isEmpty } from "lodash";
-import React, { PureComponent, ChangeEvent } from "react";
+import React, { PureComponent, ChangeEvent, RefObject, createRef } from "react";
 import FormControl from "@material-ui/core/FormControl";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import InputLabel from "@material-ui/core/InputLabel";
-import TextField from "@material-ui/core/TextField";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
+import TextField, { TextFieldProps } from "@material-ui/core/TextField";
+import OutlinedInput, { OutlinedInputProps } from "@material-ui/core/OutlinedInput";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 
 import AddressFieldProps, { AddressFieldMode } from './AddressField.props';
 
 class AddressField extends PureComponent<AddressFieldProps> {
+    protected readonly inputElement: RefObject<HTMLInputElement> = createRef();
+
+    public focus() {
+        if(this.inputElement.current)
+            this.inputElement.current.focus();
+    }
+
     protected onChangeValue(event: ChangeEvent<HTMLInputElement>) {
         if(this.props.onChange)
             this.props.onChange(event);
@@ -24,15 +31,16 @@ class AddressField extends PureComponent<AddressFieldProps> {
     protected createNormalInput(deleteButton: JSX.Element | null) {
         return (
             <TextField
-            id={this.props.id}
-            type="text"
-            value={this.props.value}
-            onChange={this.onChangeValue.bind(this)}
-            error={!isEmpty(this.props.error)}
-            helperText={this.props.error}
-            InputProps={{
-                endAdornment: deleteButton
-            }}
+                id={this.props.id}
+                type="text"
+                value={this.props.value}
+                onChange={this.onChangeValue.bind(this)}
+                error={!isEmpty(this.props.error)}
+                helperText={this.props.error}
+                inputRef={this.inputElement}
+                InputProps={{
+                    endAdornment: deleteButton
+                }}
             />
         );
     }
@@ -45,10 +53,11 @@ class AddressField extends PureComponent<AddressFieldProps> {
                 </InputLabel>
                 <OutlinedInput
                     id={this.props.id}
+                    inputRef={this.inputElement}
                     type="text"
                     value={this.props.value}
                     onChange={this.onChangeValue.bind(this)}
-                    labelWidth={140}
+                    labelWidth={this.props.label.length * 8}
                     endAdornment={deleteButton}
                 />
             </>
